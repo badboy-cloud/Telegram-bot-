@@ -7,7 +7,7 @@ import threading
 BOT_TOKEN = "8448965403:AAGHPZ5fw6hbi_rexedkRf50rBRQ9FmK-9Y"      # put your token here
 ADMIN_ID = 6205742667             # your user ID
 QR_URL = "pay50.png"              # QR image must be in same folder
-DOWNLOAD_LINK = "https://cinetv24.netlify.app/cinefile"  # app link
+DOWNLOAD_LINK = "https://cinetv-24.netlify.app/"  # app link
 
 # === /start command ===
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
