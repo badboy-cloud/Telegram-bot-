@@ -52,7 +52,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.message.reply_text("⚠️ QR image not found!")
 
     elif query.data == "paid":
-        await query.message.reply_text("📸 Please send your payment screenshot.")
+        await query.message.reply_text("📸 Please send your payment screenshot with UTR number.")
 
 # ============== PHOTO HANDLER ==============
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
