@@ -156,12 +156,4 @@ def main():
     application.run_polling()
 
 if __name__ == "__main__":
-    main()    application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
-    application.add_handler(CommandHandler("approve", approve))
-    application.add_handler(CommandHandler("help", help_command))
-
-    print("🚀 CineTv Bot is running...")
-    application.run_polling()
-
-if __name__ == "__main__":
     main()
