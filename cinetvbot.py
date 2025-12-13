@@ -121,8 +121,12 @@ async def reject(update: Update, context: ContextTypes.DEFAULT_TYPE):
         chat_id=user_id,
         text=(
             "❌ *Payment Rejected*\n\n"
-            "Your payment could not be verified.\n"
-            "Please send a clear screenshot or contact admin."
+                    "Your payment could not be verified.\n\n"
+                    "Possible reasons:\n"
+                    "• Wrong amount\n"
+                    "• Unclear screenshot\n"
+                    "• Already used payment\n\n"
+                    "Please try again or contact admin."
         ),
         parse_mode="Markdown"
     )
