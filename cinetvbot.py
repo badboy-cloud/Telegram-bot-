@@ -11,8 +11,8 @@ from flask import Flask
 import threading
 
 # ============== CONFIG ==============
-BOT_TOKEN = "8448965403:AAGHPZ5fw6hbi_rexedkRf50rBRQ9FmK-9Y"
-ADMIN_ID = 6205742667
+BOT_TOKEN = "8426456955:AAHtdeC13smfnzQHCe4C6TQbjKYXLdI2jFg"
+ADMIN_ID = 5952004262
 QR_URL = "pay50.png"
 DOWNLOAD_LINK = "https://cinetv-24.netlify.app/"
 
