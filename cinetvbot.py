@@ -11,7 +11,7 @@ from flask import Flask
 import threading
 
 # ============== CONFIG ==============
-BOT_TOKEN = "8426456955:AAG1o0E8Vnsk2rtppsHJpxnIy5Q37rNVgpA"
+BOT_TOKEN = "YOUR_BOT_TOKEN"
 ADMIN_ID = 5952004262
 QR_URL = "pay50.png"
 
@@ -177,4 +177,9 @@ def main():
     application.add_handler(CallbackQueryHandler(handle_callback))
     application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
-    print
+    print("🚀 CineTv Bot Running...")
+
+    application.run_polling()
+
+if __name__ == "__main__":
+    main()
