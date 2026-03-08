@@ -11,7 +11,7 @@ from flask import Flask
 import threading
 
 # ============== CONFIG ==============
-BOT_TOKEN = "YOUR_BOT_TOKEN"
+BOT_TOKEN = "8426456955:AAG1o0E8Vnsk2rtppsHJpxnIy5Q37rNVgpA"
 ADMIN_ID = 5952004262
 QR_URL = "pay50.png"
 
