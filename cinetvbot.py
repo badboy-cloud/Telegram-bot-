@@ -17,18 +17,20 @@ QR_URL = "pay50.png"
 
 # ============== /start ==============
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     keyboard = [[InlineKeyboardButton("🎬 Buy CineTv App ₹50", callback_data="buy")]]
 
     await update.message.reply_text(
-        "🎥 *Welcome to CineTv App Bot!*\n\n"
+        "🎥 <b>Welcome to CineTv App Bot!</b>\n\n"
         "Buy CineTv App for ₹50.\n\n"
         "Click below to pay 👇",
         reply_markup=InlineKeyboardMarkup(keyboard),
-        parse_mode="Markdown"
+        parse_mode="HTML"
     )
 
 # ============== CALLBACK ==============
 async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     query = update.callback_query
     await query.answer()
 
@@ -38,22 +40,25 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         try:
             with open(QR_URL, "rb") as photo:
+
                 await query.message.reply_photo(
                     photo=photo,
                     caption=(
-                        "💳 *Payment Instructions:*\n\n"
+                        "💳 <b>Payment Instructions:</b>\n\n"
                         "1️⃣ Scan the QR code using Google Pay / PhonePe / Paytm\n"
                         "2️⃣ Pay ₹50 and take a screenshot\n"
                         "3️⃣ Send it here for verification\n\n"
                         "⚠️ Don’t close this chat until verification"
                     ),
                     reply_markup=InlineKeyboardMarkup(buttons),
-                    parse_mode="Markdown"
+                    parse_mode="HTML"
                 )
+
         except:
             await query.message.reply_text("⚠️ QR image not found!")
 
     elif query.data == "paid":
+
         await query.message.reply_text(
             "📸 Please send your payment screenshot with UTR number."
         )
@@ -63,7 +68,9 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user = update.message.from_user
     user_id = user.id
+
     username = f"@{user.username}" if user.username else user.first_name
+
     photo_id = update.message.photo[-1].file_id
 
     await update.message.reply_text(
@@ -71,11 +78,12 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     caption = (
-        f"📩 *Payment Proof*\n\n"
+        f"📩 <b>Payment Proof</b>\n\n"
         f"👤 User: {username}\n"
-        f"🆔 User ID: `{user_id}`\n\n"
-        f"Use command:\n"
-        f"/approve {user_id} <download_link> <message>\n"
+        f"🆔 User ID: <code>{user_id}</code>\n\n"
+        f"Approve:\n"
+        f"/approve {user_id} <link> <message>\n\n"
+        f"Reject:\n"
         f"/reject {user_id}"
     )
 
@@ -83,7 +91,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         chat_id=ADMIN_ID,
         photo=photo_id,
         caption=caption,
-        parse_mode="Markdown"
+        parse_mode="HTML"
     )
 
 # ============== APPROVE ==============
@@ -106,11 +114,11 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=user_id,
         text=(
-            "✅ *Payment Approved!*\n\n"
+            "✅ <b>Payment Approved!</b>\n\n"
             f"{message_text}\n\n"
             f"🎬 Download Link:\n{download_link}"
         ),
-        parse_mode="Markdown"
+        parse_mode="HTML"
     )
 
     await update.message.reply_text(f"✅ Approved user {user_id}")
@@ -131,7 +139,7 @@ async def reject(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=user_id,
         text=(
-            "❌ *Payment Rejected*\n\n"
+            "❌ <b>Payment Rejected</b>\n\n"
             "Your payment could not be verified.\n\n"
             "Possible reasons:\n"
             "• Wrong amount\n"
@@ -139,18 +147,18 @@ async def reject(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "• Already used payment\n\n"
             "Please try again or contact admin."
         ),
-        parse_mode="Markdown"
+        parse_mode="HTML"
     )
 
     await update.message.reply_text(f"❌ Rejected user {user_id}")
 
 # ============== HELP ==============
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     await update.message.reply_text(
-        "Commands:\n"
-        "/start – Buy CineTv App\n"
-        "/approve <user_id> <link> <message> – Approve payment\n"
-        "/reject <user_id> – Reject payment"
+        "/start - Buy CineTv App\n"
+        "/approve <user_id> <link> <message>\n"
+        "/reject <user_id>"
     )
 
 # ============== FLASK KEEP ALIVE ==============
@@ -174,7 +182,9 @@ def main():
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("approve", approve))
     application.add_handler(CommandHandler("reject", reject))
+
     application.add_handler(CallbackQueryHandler(handle_callback))
+
     application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
     print("🚀 CineTv Bot Running...")
