@@ -14,11 +14,11 @@ import threading
 BOT_TOKEN = "8426456955:AAG1o0E8Vnsk2rtppsHJpxnIy5Q37rNVgpA"
 ADMIN_ID = 5952004262
 QR_URL = "pay50.png"
-DOWNLOAD_LINK = "https://cinetv-24.netlify.app/"
 
 # ============== /start ==============
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[InlineKeyboardButton("🎬 Buy CineTv App ₹50", callback_data="buy")]]
+
     await update.message.reply_text(
         "🎥 *Welcome to CineTv App Bot!*\n\n"
         "Buy CineTv App for ₹50.\n\n"
@@ -33,17 +33,19 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
 
     if query.data == "buy":
+
         buttons = [[InlineKeyboardButton("✅ I’ve Paid", callback_data="paid")]]
+
         try:
             with open(QR_URL, "rb") as photo:
                 await query.message.reply_photo(
                     photo=photo,
                     caption=(
-                        "💳 *Payment Instructions:*\n\n"  
-                    "1️⃣ Scan the QR code using Google Pay / PhonePe / Paytm\n"  
-                    "2️⃣ Pay ₹50 and take a screenshot\n"  
-                    "3️⃣ Send it here for verification\n\n"  
-                    "⚠️ Don’t close this chat until verification"  
+                        "💳 *Payment Instructions:*\n\n"
+                        "1️⃣ Scan the QR code using Google Pay / PhonePe / Paytm\n"
+                        "2️⃣ Pay ₹50 and take a screenshot\n"
+                        "3️⃣ Send it here for verification\n\n"
+                        "⚠️ Don’t close this chat until verification"
                     ),
                     reply_markup=InlineKeyboardMarkup(buttons),
                     parse_mode="Markdown"
@@ -52,10 +54,13 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.message.reply_text("⚠️ QR image not found!")
 
     elif query.data == "paid":
-        await query.message.reply_text("📸 Please send your payment screenshot with UTR number.")
+        await query.message.reply_text(
+            "📸 Please send your payment screenshot with UTR number."
+        )
 
 # ============== PHOTO HANDLER ==============
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     user = update.message.from_user
     user_id = user.id
     username = f"@{user.username}" if user.username else user.first_name
@@ -69,8 +74,8 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"📩 *Payment Proof*\n\n"
         f"👤 User: {username}\n"
         f"🆔 User ID: `{user_id}`\n\n"
-        f"Use:\n"
-        f"/approve {user_id}\n"
+        f"Use command:\n"
+        f"/approve {user_id} <download_link> <message>\n"
         f"/reject {user_id}"
     )
 
@@ -81,32 +86,38 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="Markdown"
     )
 
-# ============== /approve COMMAND ==============
+# ============== APPROVE ==============
 async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     if update.effective_user.id != ADMIN_ID:
         await update.message.reply_text("❌ Not authorized.")
         return
 
-    if not context.args:
-        await update.message.reply_text("Usage: /approve <user_id>")
+    if len(context.args) < 3:
+        await update.message.reply_text(
+            "Usage:\n/approve <user_id> <download_link> <message>"
+        )
         return
 
     user_id = int(context.args[0])
+    download_link = context.args[1]
+    message_text = " ".join(context.args[2:])
 
     await context.bot.send_message(
         chat_id=user_id,
         text=(
             "✅ *Payment Approved!*\n\n"
-            f"🎬 Download link:\n👉 {DOWNLOAD_LINK}\n\n"
-            "Enjoy watching!"
+            f"{message_text}\n\n"
+            f"🎬 Download Link:\n{download_link}"
         ),
         parse_mode="Markdown"
     )
 
     await update.message.reply_text(f"✅ Approved user {user_id}")
 
-# ============== /reject COMMAND ==============
+# ============== REJECT ==============
 async def reject(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     if update.effective_user.id != ADMIN_ID:
         await update.message.reply_text("❌ Not authorized.")
         return
@@ -121,12 +132,12 @@ async def reject(update: Update, context: ContextTypes.DEFAULT_TYPE):
         chat_id=user_id,
         text=(
             "❌ *Payment Rejected*\n\n"
-                    "Your payment could not be verified.\n\n"
-                    "Possible reasons:\n"
-                    "• Wrong amount\n"
-                    "• Unclear screenshot\n"
-                    "• Already used payment\n\n"
-                    "Please try again or contact admin."
+            "Your payment could not be verified.\n\n"
+            "Possible reasons:\n"
+            "• Wrong amount\n"
+            "• Unclear screenshot\n"
+            "• Already used payment\n\n"
+            "Please try again or contact admin."
         ),
         parse_mode="Markdown"
     )
@@ -138,8 +149,8 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Commands:\n"
         "/start – Buy CineTv App\n"
-        "/approve <user_id> – Approve payment (admin)\n"
-        "/reject <user_id> – Reject payment (admin)"
+        "/approve <user_id> <link> <message> – Approve payment\n"
+        "/reject <user_id> – Reject payment"
     )
 
 # ============== FLASK KEEP ALIVE ==============
@@ -154,6 +165,7 @@ def run_flask():
 
 # ============== MAIN ==============
 def main():
+
     threading.Thread(target=run_flask, daemon=True).start()
 
     application = Application.builder().token(BOT_TOKEN).build()
@@ -165,8 +177,4 @@ def main():
     application.add_handler(CallbackQueryHandler(handle_callback))
     application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
-    print("🚀 CineTv Bot Running...")
-    application.run_polling()
-
-if __name__ == "__main__":
-    main()
+    print
