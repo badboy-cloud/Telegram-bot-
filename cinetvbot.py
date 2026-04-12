@@ -23,7 +23,7 @@ APPROVED_USERS = set()
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[InlineKeyboardButton("🎬 Buy App ₹50", callback_data="buy")]]
     await update.message.reply_text(
-        "🎥 *Welcome to App Bot!*\n\n"
+        "🎥 *Welcome to cinema App Bot!*\n\n"
         "Buy App for ₹50.\n\n"
         "Click below to pay 👇",
         reply_markup=InlineKeyboardMarkup(keyboard),
