@@ -163,7 +163,7 @@ async def handle_admin_ad_photo(update: Update, context: ContextTypes.DEFAULT_TY
     context.user_data["ad_photo"] = False
 
     photo_id = update.message.photo[-1].file_id
-    caption = update.message.caption or "📢 *New Update from CineTv*"
+    caption = update.message.caption or "📢 *New Update"
 
     sent = 0
     for user_id in APPROVED_USERS:
