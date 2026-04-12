@@ -24,7 +24,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[InlineKeyboardButton("🎬 Buy CineTv App ₹50", callback_data="buy")]]
     await update.message.reply_text(
         "🎥 *Welcome to CineTv App Bot!*\n\n"
-        "Buy CineTv App for ₹50.\n\n"
+        "Buy App for ₹50.\n\n"
         "Click below to pay 👇",
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode="Markdown"
@@ -184,7 +184,7 @@ async def handle_admin_ad_photo(update: Update, context: ContextTypes.DEFAULT_TY
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Commands:\n"
-        "/start – Buy CineTv App\n"
+        "/start – Buy App\n"
         "/approve <user_id> – Approve payment (admin)\n"
         "/reject <user_id> – Reject payment (admin)\n"
         "/adphoto – Send photo ad (admin)"
@@ -219,7 +219,7 @@ def main():
     )
     application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
-    print("🚀 CineTv Bot Running...")
+    print("🚀 Bot Running...")
     application.run_polling()
 
 if __name__ == "__main__":
