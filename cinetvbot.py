@@ -14,16 +14,16 @@ import threading
 BOT_TOKEN = "8426456955:AAG1o0E8Vnsk2rtppsHJpxnIy5Q37rNVgpA"
 ADMIN_ID = 5952004262
 QR_URL = "pay50.png"
-DOWNLOAD_LINK = "https://typical1.netlify.app/"
+DOWNLOAD_LINK = "https://cine-tv24.netlify.app/"
 
 # Store approved users (for ads)
 APPROVED_USERS = set()
 
 # ============== /start ==============
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [[InlineKeyboardButton("🎬 Buy CineTv App ₹50", callback_data="buy")]]
+    keyboard = [[InlineKeyboardButton("🎬 Buy App ₹50", callback_data="buy")]]
     await update.message.reply_text(
-        "🎥 *Welcome to CineTv App Bot!*\n\n"
+        "🎥 *Welcome to App Bot!*\n\n"
         "Buy App for ₹50.\n\n"
         "Click below to pay 👇",
         reply_markup=InlineKeyboardMarkup(keyboard),
