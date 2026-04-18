@@ -49,13 +49,18 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             with open(QR_URL, "rb") as photo:
                 await query.message.reply_photo(
                     photo=photo,
-                    caption=(
-                        "💳 *Payment Instructions:*\n\n"
-                        "1️⃣ Scan the QR code using Google Pay / PhonePe / Paytm / any UPI\n"
-                        "2️⃣ Pay ₹50 and take a screenshot\n"
-                        "3️⃣ Send it here for verification\n\n"
-                        "⚠️ Don’t close this chat until verification"
-                    ),
+                    caption = (
+                        "💳 *Payment Instructions*\n\n"
+                        "1️⃣ Click *Buy App – ₹50*\n"
+                        "2️⃣ Scan the QR code & complete payment\n"
+                        "3️⃣ Take a clear screenshot (with UTR)\n"
+                        "4️⃣ Send the screenshot here 📸\n"
+                        "5️⃣ Wait for admin verification ⏳\n"
+                        "6️⃣ Get instant app access after approval 🎉\n\n"
+                        "⚠️ *Important:*\n"
+                        "• Do not close this chat\n"
+                        "• Send correct payment proof\n"
+                    )
                     reply_markup=InlineKeyboardMarkup(buttons),
                     parse_mode="Markdown"
                 )
