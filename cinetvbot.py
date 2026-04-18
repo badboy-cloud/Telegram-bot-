@@ -60,7 +60,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         "⚠️ *Important:*\n"
                         "• Do not close this chat\n"
                         "• Send correct payment proof\n"
-                    )
+                    ),
                     reply_markup=InlineKeyboardMarkup(buttons),
                     parse_mode="Markdown"
                 )
