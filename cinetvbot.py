@@ -1,5 +1,6 @@
 import os
 import threading
+import asyncio
 from dotenv import load_dotenv
 from flask import Flask
 
@@ -16,13 +17,12 @@ from telegram.ext import (
 # ============== LOAD ENV ==============
 load_dotenv()
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+# 👉 ADD MULTIPLE TOKENS (comma separated in .env)
+BOT_TOKENS = os.getenv("BOT_TOKENS").split(",")
+
 ADMIN_ID = int(os.getenv("ADMIN_ID"))
 QR_URL = os.getenv("QR_URL")
 DOWNLOAD_LINK = os.getenv("DOWNLOAD_LINK")
-
-if not BOT_TOKEN:
-    raise ValueError("❌ BOT_TOKEN not found in .env")
 
 # Store approved users
 APPROVED_USERS = set()
@@ -202,11 +202,9 @@ def home():
 def run_flask():
     app.run(host="0.0.0.0", port=8080)
 
-# ============== MAIN ==============
-def main():
-    threading.Thread(target=run_flask, daemon=True).start()
-
-    application = Application.builder().token(BOT_TOKEN).build()
+# ============== CREATE BOT ==========
+def create_bot(token):
+    application = Application.builder().token(token).build()
 
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
@@ -221,8 +219,26 @@ def main():
     )
     application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
-    print("🚀 Bot Running...")
-    application.run_polling()
+    return application
+
+# ============== MAIN MULTI BOT ==============
+async def run_bot(app):
+    await app.initialize()
+    await app.start()
+    await app.updater.start_polling()
+
+    while True:
+        await asyncio.sleep(3600)
+
+async def main():
+    threading.Thread(target=run_flask, daemon=True).start()
+
+    apps = [create_bot(token) for token in BOT_TOKENS]
+
+    tasks = [asyncio.create_task(run_bot(app)) for app in apps]
+
+    print("🚀 Multiple Bots Running...")
+    await asyncio.gather(*tasks)
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
