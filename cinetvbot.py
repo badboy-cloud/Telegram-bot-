@@ -51,10 +51,10 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     photo=photo,
                     caption=(
                         "💳 *Payment Instructions:*\n\n"
-                        "1️⃣ Scan QR (GPay / PhonePe / Paytm)\n"
-                        "2️⃣ Pay ₹50 & take screenshot\n"
-                        "3️⃣ Send it here\n\n"
-                        "⚠️ Don’t close this chat"
+                        "1️⃣ Scan the QR code using Google Pay / PhonePe / Paytm / any UPI\n"
+                        "2️⃣ Pay ₹50 and take a screenshot\n"
+                        "3️⃣ Send it here for verification\n\n"
+                        "⚠️ Don’t close this chat until verification"
                     ),
                     reply_markup=InlineKeyboardMarkup(buttons),
                     parse_mode="Markdown"
