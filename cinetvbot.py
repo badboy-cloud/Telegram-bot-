@@ -1,6 +1,7 @@
 import os
 import threading
 import asyncio
+import sqlite3
 from dotenv import load_dotenv
 from flask import Flask
 
@@ -23,7 +24,27 @@ ADMIN_ID = int(os.getenv("ADMIN_ID"))
 QR_URL = os.getenv("QR_URL")
 DOWNLOAD_LINK = os.getenv("DOWNLOAD_LINK")
 
-APPROVED_USERS = set()
+# ============== DATABASE ==============
+conn = sqlite3.connect("users.db", check_same_thread=False)
+cursor = conn.cursor()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS users (
+    user_id INTEGER PRIMARY KEY
+)
+""")
+conn.commit()
+
+def add_user(user_id):
+    try:
+        cursor.execute("INSERT INTO users (user_id) VALUES (?)", (user_id,))
+        conn.commit()
+    except:
+        pass
+
+def get_users():
+    cursor.execute("SELECT user_id FROM users")
+    return [row[0] for row in cursor.fetchall()]
 
 # ============== /start ==============
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -47,17 +68,13 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             with open(QR_URL, "rb") as photo:
                 await query.message.reply_photo(
                     photo=photo,
-                    caption = (
+                    caption=(
                         "💳 *Payment Instructions*\n\n"
                         "1️⃣ Click *Buy App – ₹50*\n"
-                        "2️⃣ Scan the QR code & complete payment\n"
-                        "3️⃣ Take a clear screenshot (with UTR)\n"
-                        "4️⃣ Send the screenshot here 📸\n"
-                        "5️⃣ Wait for admin verification ⏳\n"
-                        "6️⃣ Get instant app access after approval 🎉\n\n"
-                        "⚠️ *Important:*\n"
-                        "• Do not close this chat\n"
-                        "• Send correct payment proof\n"
+                        "2️⃣ Scan QR & pay\n"
+                        "3️⃣ Send screenshot\n"
+                        "4️⃣ Wait for approval\n\n"
+                        "⚠️ Do not close chat"
                     ),
                     reply_markup=InlineKeyboardMarkup(buttons),
                     parse_mode="Markdown"
@@ -66,9 +83,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.message.reply_text("⚠️ QR image not found!")
 
     elif query.data == "paid":
-        await query.message.reply_text(
-            "📸 Send payment screenshot with UTR number."
-        )
+        await query.message.reply_text("📸 Send screenshot with UTR.")
 
 # ============== USER PHOTO ==============
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -77,14 +92,12 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     username = f"@{user.username}" if user.username else user.first_name
     photo_id = update.message.photo[-1].file_id
 
-    await update.message.reply_text(
-        "✅ Screenshot received. Wait for admin approval."
-    )
+    await update.message.reply_text("✅ Screenshot received. Wait for approval.")
 
     caption = (
         f"📩 *Payment Proof*\n\n"
-        f"👤 User: {username}\n"
-        f"🆔 User ID: `{user_id}`\n\n"
+        f"👤 {username}\n"
+        f"🆔 `{user_id}`\n\n"
         f"/approve {user_id}\n"
         f"/reject {user_id}"
     )
@@ -99,173 +112,97 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ============== APPROVE ==============
 async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
-        await update.message.reply_text("❌ Not authorized")
         return
 
     if not context.args:
-        await update.message.reply_text("Usage: /approve <user_id>")
+        await update.message.reply_text("Usage: /approve <id>")
         return
 
     user_id = int(context.args[0])
 
     await context.bot.send_message(
         chat_id=user_id,
-        text=(
-            "✅ *Payment Approved!*\n\n"
-            f"🎬 Download:\n{DOWNLOAD_LINK}\n\nEnjoy!"
-        ),
-        parse_mode="Markdown"
+        text=f"✅ Approved!\n\n🎬 {DOWNLOAD_LINK}"
     )
 
-    APPROVED_USERS.add(user_id)
+    add_user(user_id)  # ✅ SAVE PERMANENTLY
 
-    await update.message.reply_text(f"✅ Approved {user_id}")
+    await update.message.reply_text("✅ User saved permanently")
 
 # ============== REJECT ==============
 async def reject(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
-        await update.message.reply_text("❌ Not authorized")
-        return
-
-    if not context.args:
-        await update.message.reply_text("Usage: /reject <user_id>")
         return
 
     user_id = int(context.args[0])
 
     await context.bot.send_message(
         chat_id=user_id,
-        text=(
-            "❌ *Payment Rejected*\n\n"
-            "Check:\n• Wrong amount\n• Blur screenshot\n• Duplicate\n\nTry again."
-        ),
-        parse_mode="Markdown"
+        text="❌ Payment rejected. Try again."
     )
 
-    await update.message.reply_text(f"❌ Rejected {user_id}")
-
-# ============== 🆕 LIST USERS ==============
+# ============== USERS ==============
 async def list_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
         return
 
-    if not APPROVED_USERS:
-        await update.message.reply_text("No users yet.")
+    users = get_users()
+
+    if not users:
+        await update.message.reply_text("No users.")
         return
 
-    users = "\n".join(str(u) for u in APPROVED_USERS)
+    text = "\n".join(map(str, users))
+    await update.message.reply_text(f"📋 Users:\n\n{text}")
 
-    await update.message.reply_text(
-        f"📋 *Approved Users:*\n\n{users}",
-        parse_mode="Markdown"
-    )
-
-# ============== 🆕 BROADCAST ==============
+# ============== BROADCAST ==============
 async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
         return
 
-    if not context.args:
-        await update.message.reply_text("Usage: /broadcast message")
-        return
-
     message = " ".join(context.args)
+    users = get_users()
 
     sent = 0
-    for user_id in APPROVED_USERS:
+    for user_id in users:
         try:
             await context.bot.send_message(chat_id=user_id, text=message)
             sent += 1
         except:
             pass
 
-    await update.message.reply_text(f"✅ Sent to {sent} users")
-
-# ============== AD PHOTO START ==============
-async def ad_photo_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != ADMIN_ID:
-        await update.message.reply_text("❌ Not authorized")
-        return
-
-    context.user_data["ad_photo"] = True
-    await update.message.reply_text("📸 Send ad photo now")
-
-# ============== ADMIN AD PHOTO ==============
-async def handle_admin_ad_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != ADMIN_ID:
-        return
-
-    if not context.user_data.get("ad_photo"):
-        return
-
-    context.user_data["ad_photo"] = False
-
-    photo_id = update.message.photo[-1].file_id
-    caption = update.message.caption or "📢 *New Update*"
-
-    sent = 0
-    for user_id in APPROVED_USERS:
-        try:
-            await context.bot.send_photo(
-                chat_id=user_id,
-                photo=photo_id,
-                caption=caption,
-                parse_mode="Markdown"
-            )
-            sent += 1
-        except:
-            pass
-
-    await update.message.reply_text(f"✅ Sent to {sent} users")
-
-# ============== HELP ==============
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "/start\n"
-        "/approve <id>\n"
-        "/reject <id>\n"
-        "/users\n"
-        "/broadcast msg\n"
-        "/adphoto"
-    )
+    await update.message.reply_text(f"Sent to {sent}")
 
 # ============== FLASK KEEP ALIVE ==============
 app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "Bot running"
+    return "Running"
 
 def run_flask():
     app.run(host="0.0.0.0", port=8080)
 
 # ============== CREATE BOT ==========
 def create_bot(token):
-    application = Application.builder().token(token).build()
+    app = Application.builder().token(token).build()
 
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("approve", approve))
-    application.add_handler(CommandHandler("reject", reject))
-    application.add_handler(CommandHandler("users", list_users))        # ✅ NEW
-    application.add_handler(CommandHandler("broadcast", broadcast))    # ✅ NEW
-    application.add_handler(CommandHandler("adphoto", ad_photo_start))
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("approve", approve))
+    app.add_handler(CommandHandler("reject", reject))
+    app.add_handler(CommandHandler("users", list_users))
+    app.add_handler(CommandHandler("broadcast", broadcast))
 
-    application.add_handler(CallbackQueryHandler(handle_callback))
+    app.add_handler(CallbackQueryHandler(handle_callback))
+    app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
-    application.add_handler(
-        MessageHandler(filters.PHOTO & filters.User(ADMIN_ID), handle_admin_ad_photo)
-    )
-    application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
+    return app
 
-    return application
-
-# ============== MAIN MULTI BOT ==============
+# ============== RUN MULTIPLE ==========
 async def run_bot(app):
     await app.initialize()
     await app.start()
     await app.updater.start_polling()
-
     while True:
         await asyncio.sleep(3600)
 
@@ -273,11 +210,7 @@ async def main():
     threading.Thread(target=run_flask, daemon=True).start()
 
     apps = [create_bot(token) for token in BOT_TOKENS]
-
-    tasks = [asyncio.create_task(run_bot(app)) for app in apps]
-
-    print("🚀 Multiple Bots Running...")
-    await asyncio.gather(*tasks)
+    await asyncio.gather(*[run_bot(app) for app in apps])
 
 if __name__ == "__main__":
     asyncio.run(main())
