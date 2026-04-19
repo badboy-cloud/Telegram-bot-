@@ -17,14 +17,12 @@ from telegram.ext import (
 # ============== LOAD ENV ==============
 load_dotenv()
 
-# 👉 ADD MULTIPLE TOKENS (comma separated in .env)
 BOT_TOKENS = os.getenv("BOT_TOKENS").split(",")
 
 ADMIN_ID = int(os.getenv("ADMIN_ID"))
 QR_URL = os.getenv("QR_URL")
 DOWNLOAD_LINK = os.getenv("DOWNLOAD_LINK")
 
-# Store approved users
 APPROVED_USERS = set()
 
 # ============== /start ==============
@@ -146,6 +144,43 @@ async def reject(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(f"❌ Rejected {user_id}")
 
+# ============== 🆕 LIST USERS ==============
+async def list_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != ADMIN_ID:
+        return
+
+    if not APPROVED_USERS:
+        await update.message.reply_text("No users yet.")
+        return
+
+    users = "\n".join(str(u) for u in APPROVED_USERS)
+
+    await update.message.reply_text(
+        f"📋 *Approved Users:*\n\n{users}",
+        parse_mode="Markdown"
+    )
+
+# ============== 🆕 BROADCAST ==============
+async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != ADMIN_ID:
+        return
+
+    if not context.args:
+        await update.message.reply_text("Usage: /broadcast message")
+        return
+
+    message = " ".join(context.args)
+
+    sent = 0
+    for user_id in APPROVED_USERS:
+        try:
+            await context.bot.send_message(chat_id=user_id, text=message)
+            sent += 1
+        except:
+            pass
+
+    await update.message.reply_text(f"✅ Sent to {sent} users")
+
 # ============== AD PHOTO START ==============
 async def ad_photo_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
@@ -186,10 +221,12 @@ async def handle_admin_ad_photo(update: Update, context: ContextTypes.DEFAULT_TY
 # ============== HELP ==============
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "/start - Buy App\n"
+        "/start\n"
         "/approve <id>\n"
         "/reject <id>\n"
-        "/adphoto - Send ad"
+        "/users\n"
+        "/broadcast msg\n"
+        "/adphoto"
     )
 
 # ============== FLASK KEEP ALIVE ==============
@@ -210,6 +247,8 @@ def create_bot(token):
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("approve", approve))
     application.add_handler(CommandHandler("reject", reject))
+    application.add_handler(CommandHandler("users", list_users))        # ✅ NEW
+    application.add_handler(CommandHandler("broadcast", broadcast))    # ✅ NEW
     application.add_handler(CommandHandler("adphoto", ad_photo_start))
 
     application.add_handler(CallbackQueryHandler(handle_callback))
