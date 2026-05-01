@@ -70,10 +70,12 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     photo=photo,
                     caption=(
                         "💳 *Payment Instructions*\n\n"
-                        "1️⃣ Click *Buy App – ₹50*\n"
-                        "2️⃣ Scan QR & pay\n"
-                        "3️⃣ Send screenshot\n"
-                        "4️⃣ Wait for approval\n\n"
+                        "1️⃣ Click on “Buy App – ₹50”\n"
+                        "2️⃣ Scan the QR code and complete the ₹50 payment\n"
+                        "3️⃣ Take a screenshot of the payment\n"
+                        "4️⃣ Send the screenshot here\n"
+                        "5️⃣ Admin will verify your payment\n"
+                        "6️⃣ After verification, the app will be sent to you instantly\n\n"
                         "⚠️ Do not close chat"
                     ),
                     reply_markup=InlineKeyboardMarkup(buttons),
