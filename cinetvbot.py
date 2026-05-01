@@ -124,7 +124,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await context.bot.send_message(
         chat_id=user_id,
-        text=f"✅ Approved!\n\n🎬 {DOWNLOAD_LINK}"
+        text=f"✅ Approved!\n\nYou will be notified if there are any updates.\n\n{DOWNLOAD_LINK}"
     )
 
     add_user(user_id)  # ✅ SAVE PERMANENTLY
